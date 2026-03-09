@@ -11,6 +11,8 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
+import { DatePicker } from '@/components/ui/DatePicker';
+import { formatNumber, parseNumber, parseInteger } from '@/lib/utils/numberFormat';
 
 export default function AdminNewIncubatorPage() {
   const router = useRouter();
@@ -26,7 +28,7 @@ export default function AdminNewIncubatorPage() {
     name: '',
     description: '',
     countryCode: '',
-    founded: new Date().toISOString(),
+    founded: new Date().toISOString().split('T')[0],
     incubatorCharacteristics: {
       averageEmployeePerResident: 'ONE_PER_ONE_RESIDENT',
       shareAmount: 'BETWEEN_1_AND_5_PERCENT',
@@ -406,11 +408,16 @@ export default function AdminNewIncubatorPage() {
 
     setIsLoading(true);
     try {
+      // Convert date-only format to ISO string for backend
+      const foundedDate = formData.founded!.includes('T') 
+        ? formData.founded! 
+        : new Date(formData.founded! + 'T00:00:00').toISOString();
+      
       const request: IncubatorRequest = {
         name: formData.name!,
         description: formData.description!,
         countryCode: formData.countryCode!,
-        founded: formData.founded!,
+        founded: foundedDate,
         managerId: formData.managerId,
         incubatorCharacteristics: formData.incubatorCharacteristics!,
         incubatorInfrastructure: formData.incubatorInfrastructure!,
@@ -567,12 +574,12 @@ export default function AdminNewIncubatorPage() {
                   })),
                 ]}
               />
-              <Input
+              <DatePicker
                 label="Founded Date *"
-                type="datetime-local"
-                value={formData.founded ? new Date(formData.founded).toISOString().slice(0, 16) : ''}
-                onChange={(e) => setFormData({ ...formData, founded: new Date(e.target.value).toISOString() })}
+                value={formData.founded ? (formData.founded.includes('T') ? formData.founded.split('T')[0] : formData.founded) : ''}
+                onChange={(value) => setFormData({ ...formData, founded: value })}
                 required
+                maxDate={new Date()}
               />
             </div>
           </Card>
@@ -619,37 +626,37 @@ export default function AdminNewIncubatorPage() {
               />
               <Input
                 label="Total Staff"
-                type="number"
-                value={formData.incubatorCharacteristics?.totalStaff || ''}
+                type="text"
+                value={formatNumber(formData.incubatorCharacteristics?.totalStaff)}
                 onChange={(e) => setFormData({
                   ...formData,
                   incubatorCharacteristics: {
                     ...formData.incubatorCharacteristics!,
-                    totalStaff: e.target.value ? parseInt(e.target.value) : undefined,
+                    totalStaff: parseInteger(e.target.value),
                   },
                 })}
               />
               <Input
                 label="Experts and Consultants"
-                type="number"
-                value={formData.incubatorCharacteristics?.expertsAndConsultants || ''}
+                type="text"
+                value={formatNumber(formData.incubatorCharacteristics?.expertsAndConsultants)}
                 onChange={(e) => setFormData({
                   ...formData,
                   incubatorCharacteristics: {
                     ...formData.incubatorCharacteristics!,
-                    expertsAndConsultants: e.target.value ? parseInt(e.target.value) : undefined,
+                    expertsAndConsultants: parseInteger(e.target.value),
                   },
                 })}
               />
               <Input
                 label="Managers"
-                type="number"
-                value={formData.incubatorCharacteristics?.managers || ''}
+                type="text"
+                value={formatNumber(formData.incubatorCharacteristics?.managers)}
                 onChange={(e) => setFormData({
                   ...formData,
                   incubatorCharacteristics: {
                     ...formData.incubatorCharacteristics!,
-                    managers: e.target.value ? parseInt(e.target.value) : undefined,
+                    managers: parseInteger(e.target.value),
                   },
                 })}
               />
@@ -689,37 +696,37 @@ export default function AdminNewIncubatorPage() {
             <div className="space-y-4">
               <Input
                 label="Sectors Covered"
-                type="number"
-                value={formData.incubatorInfrastructure?.sectorsCovered || ''}
+                type="text"
+                value={formatNumber(formData.incubatorInfrastructure?.sectorsCovered)}
                 onChange={(e) => setFormData({
                   ...formData,
                   incubatorInfrastructure: {
                     ...formData.incubatorInfrastructure,
-                    sectorsCovered: e.target.value ? parseInt(e.target.value) : undefined,
+                    sectorsCovered: parseInteger(e.target.value),
                   },
                 })}
               />
               <Input
                 label="Years in Operation"
-                type="number"
-                value={formData.incubatorInfrastructure?.yearsInOperation || ''}
+                type="text"
+                value={formatNumber(formData.incubatorInfrastructure?.yearsInOperation)}
                 onChange={(e) => setFormData({
                   ...formData,
                   incubatorInfrastructure: {
                     ...formData.incubatorInfrastructure,
-                    yearsInOperation: e.target.value ? parseInt(e.target.value) : undefined,
+                    yearsInOperation: parseInteger(e.target.value),
                   },
                 })}
               />
               <Input
                 label="Programme Duration (months)"
-                type="number"
-                value={formData.incubatorInfrastructure?.programmeDuration || ''}
+                type="text"
+                value={formatNumber(formData.incubatorInfrastructure?.programmeDuration)}
                 onChange={(e) => setFormData({
                   ...formData,
                   incubatorInfrastructure: {
                     ...formData.incubatorInfrastructure,
-                    programmeDuration: e.target.value ? parseInt(e.target.value) : undefined,
+                    programmeDuration: parseInteger(e.target.value),
                   },
                 })}
               />
@@ -730,61 +737,61 @@ export default function AdminNewIncubatorPage() {
             <div className="space-y-4">
               <Input
                 label="Overall Space (m²)"
-                type="number"
-                value={formData.incubatorSpace?.overallSpace || ''}
+                type="text"
+                value={formatNumber(formData.incubatorSpace?.overallSpace)}
                 onChange={(e) => setFormData({
                   ...formData,
                   incubatorSpace: {
                     ...formData.incubatorSpace,
-                    overallSpace: e.target.value ? parseFloat(e.target.value) : undefined,
+                    overallSpace: parseNumber(e.target.value),
                   },
                 })}
               />
               <Input
                 label="Average Resident Space (m²)"
-                type="number"
-                value={formData.incubatorSpace?.avgResidentSpace || ''}
+                type="text"
+                value={formatNumber(formData.incubatorSpace?.avgResidentSpace)}
                 onChange={(e) => setFormData({
                   ...formData,
                   incubatorSpace: {
                     ...formData.incubatorSpace,
-                    avgResidentSpace: e.target.value ? parseFloat(e.target.value) : undefined,
+                    avgResidentSpace: parseNumber(e.target.value),
                   },
                 })}
               />
               <Input
                 label="Communal Space (m²)"
-                type="number"
-                value={formData.incubatorSpace?.communalSpace || ''}
+                type="text"
+                value={formatNumber(formData.incubatorSpace?.communalSpace)}
                 onChange={(e) => setFormData({
                   ...formData,
                   incubatorSpace: {
                     ...formData.incubatorSpace,
-                    communalSpace: e.target.value ? parseFloat(e.target.value) : undefined,
+                    communalSpace: parseNumber(e.target.value),
                   },
                 })}
               />
               <Input
                 label="Admin Space (m²)"
-                type="number"
-                value={formData.incubatorSpace?.adminSpace || ''}
+                type="text"
+                value={formatNumber(formData.incubatorSpace?.adminSpace)}
                 onChange={(e) => setFormData({
                   ...formData,
                   incubatorSpace: {
                     ...formData.incubatorSpace,
-                    adminSpace: e.target.value ? parseFloat(e.target.value) : undefined,
+                    adminSpace: parseNumber(e.target.value),
                   },
                 })}
               />
               <Input
                 label="Communal Space Ratio (%)"
-                type="number"
-                value={formData.incubatorSpace?.communalSpaceRatio || ''}
+                type="text"
+                value={formatNumber(formData.incubatorSpace?.communalSpaceRatio)}
                 onChange={(e) => setFormData({
                   ...formData,
                   incubatorSpace: {
                     ...formData.incubatorSpace,
-                    communalSpaceRatio: e.target.value ? parseFloat(e.target.value) : undefined,
+                    communalSpaceRatio: parseNumber(e.target.value),
                   },
                 })}
               />
@@ -797,49 +804,49 @@ export default function AdminNewIncubatorPage() {
               <div className="grid grid-cols-2 gap-4">
                 <Input
                   label="Offered Services"
-                  type="number"
-                  value={formData.incubatorServices?.offeredServices || ''}
+                  type="text"
+                  value={formatNumber(formData.incubatorServices?.offeredServices)}
                   onChange={(e) => setFormData({
                     ...formData,
                     incubatorServices: {
                       ...formData.incubatorServices,
-                      offeredServices: e.target.value ? parseInt(e.target.value) : undefined,
+                      offeredServices: parseInteger(e.target.value),
                     },
                   })}
                 />
                 <Input
                   label="Free Services"
-                  type="number"
-                  value={formData.incubatorServices?.freeServices || ''}
+                  type="text"
+                  value={formatNumber(formData.incubatorServices?.freeServices)}
                   onChange={(e) => setFormData({
                     ...formData,
                     incubatorServices: {
                       ...formData.incubatorServices,
-                      freeServices: e.target.value ? parseInt(e.target.value) : undefined,
+                      freeServices: parseInteger(e.target.value),
                     },
                   })}
                 />
                 <Input
                   label="Paid Services"
-                  type="number"
-                  value={formData.incubatorServices?.paidServices || ''}
+                  type="text"
+                  value={formatNumber(formData.incubatorServices?.paidServices)}
                   onChange={(e) => setFormData({
                     ...formData,
                     incubatorServices: {
                       ...formData.incubatorServices,
-                      paidServices: e.target.value ? parseInt(e.target.value) : undefined,
+                      paidServices: parseInteger(e.target.value),
                     },
                   })}
                 />
                 <Input
                   label="Used Services"
-                  type="number"
-                  value={formData.incubatorServices?.usedServices || ''}
+                  type="text"
+                  value={formatNumber(formData.incubatorServices?.usedServices)}
                   onChange={(e) => setFormData({
                     ...formData,
                     incubatorServices: {
                       ...formData.incubatorServices,
-                      usedServices: e.target.value ? parseInt(e.target.value) : undefined,
+                      usedServices: parseInteger(e.target.value),
                     },
                   })}
                 />
@@ -848,49 +855,49 @@ export default function AdminNewIncubatorPage() {
               <div className="grid grid-cols-2 gap-4">
                 <Input
                   label="Offered Facilities"
-                  type="number"
-                  value={formData.incubatorServices?.offeredFacilities || ''}
+                  type="text"
+                  value={formatNumber(formData.incubatorServices?.offeredFacilities)}
                   onChange={(e) => setFormData({
                     ...formData,
                     incubatorServices: {
                       ...formData.incubatorServices,
-                      offeredFacilities: e.target.value ? parseInt(e.target.value) : undefined,
+                      offeredFacilities: parseInteger(e.target.value),
                     },
                   })}
                 />
                 <Input
                   label="Free Facilities"
-                  type="number"
-                  value={formData.incubatorServices?.freeFacilities || ''}
+                  type="text"
+                  value={formatNumber(formData.incubatorServices?.freeFacilities)}
                   onChange={(e) => setFormData({
                     ...formData,
                     incubatorServices: {
                       ...formData.incubatorServices,
-                      freeFacilities: e.target.value ? parseInt(e.target.value) : undefined,
+                      freeFacilities: parseInteger(e.target.value),
                     },
                   })}
                 />
                 <Input
                   label="Paid Facilities"
-                  type="number"
-                  value={formData.incubatorServices?.paidFacilities || ''}
+                  type="text"
+                  value={formatNumber(formData.incubatorServices?.paidFacilities)}
                   onChange={(e) => setFormData({
                     ...formData,
                     incubatorServices: {
                       ...formData.incubatorServices,
-                      paidFacilities: e.target.value ? parseInt(e.target.value) : undefined,
+                      paidFacilities: parseInteger(e.target.value),
                     },
                   })}
                 />
                 <Input
                   label="Used Facilities"
-                  type="number"
-                  value={formData.incubatorServices?.usedFacilities || ''}
+                  type="text"
+                  value={formatNumber(formData.incubatorServices?.usedFacilities)}
                   onChange={(e) => setFormData({
                     ...formData,
                     incubatorServices: {
                       ...formData.incubatorServices,
-                      usedFacilities: e.target.value ? parseInt(e.target.value) : undefined,
+                      usedFacilities: parseInteger(e.target.value),
                     },
                   })}
                 />
@@ -899,49 +906,49 @@ export default function AdminNewIncubatorPage() {
               <div className="grid grid-cols-2 gap-4">
                 <Input
                   label="Offered Trainings"
-                  type="number"
-                  value={formData.incubatorServices?.offeredTrainings || ''}
+                  type="text"
+                  value={formatNumber(formData.incubatorServices?.offeredTrainings)}
                   onChange={(e) => setFormData({
                     ...formData,
                     incubatorServices: {
                       ...formData.incubatorServices,
-                      offeredTrainings: e.target.value ? parseInt(e.target.value) : undefined,
+                      offeredTrainings: parseInteger(e.target.value),
                     },
                   })}
                 />
                 <Input
                   label="Free Trainings"
-                  type="number"
-                  value={formData.incubatorServices?.freeTrainings || ''}
+                  type="text"
+                  value={formatNumber(formData.incubatorServices?.freeTrainings)}
                   onChange={(e) => setFormData({
                     ...formData,
                     incubatorServices: {
                       ...formData.incubatorServices,
-                      freeTrainings: e.target.value ? parseInt(e.target.value) : undefined,
+                      freeTrainings: parseInteger(e.target.value),
                     },
                   })}
                 />
                 <Input
                   label="Paid Trainings"
-                  type="number"
-                  value={formData.incubatorServices?.paidTrainings || ''}
+                  type="text"
+                  value={formatNumber(formData.incubatorServices?.paidTrainings)}
                   onChange={(e) => setFormData({
                     ...formData,
                     incubatorServices: {
                       ...formData.incubatorServices,
-                      paidTrainings: e.target.value ? parseInt(e.target.value) : undefined,
+                      paidTrainings: parseInteger(e.target.value),
                     },
                   })}
                 />
                 <Input
                   label="Used Trainings"
-                  type="number"
-                  value={formData.incubatorServices?.usedTrainings || ''}
+                  type="text"
+                  value={formatNumber(formData.incubatorServices?.usedTrainings)}
                   onChange={(e) => setFormData({
                     ...formData,
                     incubatorServices: {
                       ...formData.incubatorServices,
-                      usedTrainings: e.target.value ? parseInt(e.target.value) : undefined,
+                      usedTrainings: parseInteger(e.target.value),
                     },
                   })}
                 />
@@ -953,97 +960,97 @@ export default function AdminNewIncubatorPage() {
             <div className="grid grid-cols-2 gap-4">
               <Input
                 label="Payroll"
-                type="number"
-                value={formData.incubatorExpense?.payroll || ''}
+                type="text"
+                value={formatNumber(formData.incubatorExpense?.payroll)}
                 onChange={(e) => setFormData({
                   ...formData,
                   incubatorExpense: {
                     ...formData.incubatorExpense,
-                    payroll: e.target.value ? parseFloat(e.target.value) : undefined,
+                    payroll: parseNumber(e.target.value),
                   },
                 })}
               />
               <Input
                 label="Equipment"
-                type="number"
-                value={formData.incubatorExpense?.equipment || ''}
+                type="text"
+                value={formatNumber(formData.incubatorExpense?.equipment)}
                 onChange={(e) => setFormData({
                   ...formData,
                   incubatorExpense: {
                     ...formData.incubatorExpense,
-                    equipment: e.target.value ? parseFloat(e.target.value) : undefined,
+                    equipment: parseNumber(e.target.value),
                   },
                 })}
               />
               <Input
                 label="Utilities"
-                type="number"
-                value={formData.incubatorExpense?.utilities || ''}
+                type="text"
+                value={formatNumber(formData.incubatorExpense?.utilities)}
                 onChange={(e) => setFormData({
                   ...formData,
                   incubatorExpense: {
                     ...formData.incubatorExpense,
-                    utilities: e.target.value ? parseFloat(e.target.value) : undefined,
+                    utilities: parseNumber(e.target.value),
                   },
                 })}
               />
               <Input
                 label="Tax"
-                type="number"
-                value={formData.incubatorExpense?.tax || ''}
+                type="text"
+                value={formatNumber(formData.incubatorExpense?.tax)}
                 onChange={(e) => setFormData({
                   ...formData,
                   incubatorExpense: {
                     ...formData.incubatorExpense,
-                    tax: e.target.value ? parseFloat(e.target.value) : undefined,
+                    tax: parseNumber(e.target.value),
                   },
                 })}
               />
               <Input
                 label="Rents"
-                type="number"
-                value={formData.incubatorExpense?.rents || ''}
+                type="text"
+                value={formatNumber(formData.incubatorExpense?.rents)}
                 onChange={(e) => setFormData({
                   ...formData,
                   incubatorExpense: {
                     ...formData.incubatorExpense,
-                    rents: e.target.value ? parseFloat(e.target.value) : undefined,
+                    rents: parseNumber(e.target.value),
                   },
                 })}
               />
               <Input
                 label="Bank Repayments"
-                type="number"
-                value={formData.incubatorExpense?.bankRepayments || ''}
+                type="text"
+                value={formatNumber(formData.incubatorExpense?.bankRepayments)}
                 onChange={(e) => setFormData({
                   ...formData,
                   incubatorExpense: {
                     ...formData.incubatorExpense,
-                    bankRepayments: e.target.value ? parseFloat(e.target.value) : undefined,
+                    bankRepayments: parseNumber(e.target.value),
                   },
                 })}
               />
               <Input
                 label="Material"
-                type="number"
-                value={formData.incubatorExpense?.material || ''}
+                type="text"
+                value={formatNumber(formData.incubatorExpense?.material)}
                 onChange={(e) => setFormData({
                   ...formData,
                   incubatorExpense: {
                     ...formData.incubatorExpense,
-                    material: e.target.value ? parseFloat(e.target.value) : undefined,
+                    material: parseNumber(e.target.value),
                   },
                 })}
               />
               <Input
                 label="Insurance"
-                type="number"
-                value={formData.incubatorExpense?.insurance || ''}
+                type="text"
+                value={formatNumber(formData.incubatorExpense?.insurance)}
                 onChange={(e) => setFormData({
                   ...formData,
                   incubatorExpense: {
                     ...formData.incubatorExpense,
-                    insurance: e.target.value ? parseFloat(e.target.value) : undefined,
+                    insurance: parseNumber(e.target.value),
                   },
                 })}
               />
@@ -1081,151 +1088,151 @@ export default function AdminNewIncubatorPage() {
                     />
                     <Input
                       label="Incubated Companies"
-                      type="number"
-                      value={resident.incubatedCompanies || ''}
+                      type="text"
+                      value={formatNumber(resident.incubatedCompanies)}
                       onChange={(e) => {
                         const newResidents = [...(formData.incubatorResidents || [])];
-                        newResidents[idx] = { ...newResidents[idx], incubatedCompanies: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newResidents[idx] = { ...newResidents[idx], incubatedCompanies: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorResidents: newResidents });
                       }}
                     />
                     <Input
                       label="Failed Companies"
-                      type="number"
-                      value={resident.failedCompanies || ''}
+                      type="text"
+                      value={formatNumber(resident.failedCompanies)}
                       onChange={(e) => {
                         const newResidents = [...(formData.incubatorResidents || [])];
-                        newResidents[idx] = { ...newResidents[idx], failedCompanies: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newResidents[idx] = { ...newResidents[idx], failedCompanies: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorResidents: newResidents });
                       }}
                     />
                     <Input
                       label="Graduated Companies"
-                      type="number"
-                      value={resident.graduatedCompanies || ''}
+                      type="text"
+                      value={formatNumber(resident.graduatedCompanies)}
                       onChange={(e) => {
                         const newResidents = [...(formData.incubatorResidents || [])];
-                        newResidents[idx] = { ...newResidents[idx], graduatedCompanies: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newResidents[idx] = { ...newResidents[idx], graduatedCompanies: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorResidents: newResidents });
                       }}
                     />
                     <Input
                       label="Applications Received"
-                      type="number"
-                      value={resident.receivedApplication || ''}
+                      type="text"
+                      value={formatNumber(resident.receivedApplication)}
                       onChange={(e) => {
                         const newResidents = [...(formData.incubatorResidents || [])];
-                        newResidents[idx] = { ...newResidents[idx], receivedApplication: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newResidents[idx] = { ...newResidents[idx], receivedApplication: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorResidents: newResidents });
                       }}
                     />
                     <Input
                       label="Applications Accepted"
-                      type="number"
-                      value={resident.acceptedApplication || ''}
+                      type="text"
+                      value={formatNumber(resident.acceptedApplication)}
                       onChange={(e) => {
                         const newResidents = [...(formData.incubatorResidents || [])];
-                        newResidents[idx] = { ...newResidents[idx], acceptedApplication: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newResidents[idx] = { ...newResidents[idx], acceptedApplication: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorResidents: newResidents });
                       }}
                     />
                     <Input
                       label="Active After 3 Months"
-                      type="number"
-                      value={resident.activeAfter3Months || ''}
+                      type="text"
+                      value={formatNumber(resident.activeAfter3Months)}
                       onChange={(e) => {
                         const newResidents = [...(formData.incubatorResidents || [])];
-                        newResidents[idx] = { ...newResidents[idx], activeAfter3Months: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newResidents[idx] = { ...newResidents[idx], activeAfter3Months: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorResidents: newResidents });
                       }}
                     />
                     <Input
                       label="Active After 6 Months"
-                      type="number"
-                      value={resident.activeAfter6Months || ''}
+                      type="text"
+                      value={formatNumber(resident.activeAfter6Months)}
                       onChange={(e) => {
                         const newResidents = [...(formData.incubatorResidents || [])];
-                        newResidents[idx] = { ...newResidents[idx], activeAfter6Months: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newResidents[idx] = { ...newResidents[idx], activeAfter6Months: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorResidents: newResidents });
                       }}
                     />
                     <Input
                       label="Active After 1 Year"
-                      type="number"
-                      value={resident.activeAfter1Year || ''}
+                      type="text"
+                      value={formatNumber(resident.activeAfter1Year)}
                       onChange={(e) => {
                         const newResidents = [...(formData.incubatorResidents || [])];
-                        newResidents[idx] = { ...newResidents[idx], activeAfter1Year: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newResidents[idx] = { ...newResidents[idx], activeAfter1Year: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorResidents: newResidents });
                       }}
                     />
                     <Input
                       label="Active After 3 Years"
-                      type="number"
-                      value={resident.activeAfter3Years || ''}
+                      type="text"
+                      value={formatNumber(resident.activeAfter3Years)}
                       onChange={(e) => {
                         const newResidents = [...(formData.incubatorResidents || [])];
-                        newResidents[idx] = { ...newResidents[idx], activeAfter3Years: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newResidents[idx] = { ...newResidents[idx], activeAfter3Years: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorResidents: newResidents });
                       }}
                     />
                     <Input
                       label="Active After 5 Years"
-                      type="number"
-                      value={resident.activeAfter5Years || ''}
+                      type="text"
+                      value={formatNumber(resident.activeAfter5Years)}
                       onChange={(e) => {
                         const newResidents = [...(formData.incubatorResidents || [])];
-                        newResidents[idx] = { ...newResidents[idx], activeAfter5Years: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newResidents[idx] = { ...newResidents[idx], activeAfter5Years: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorResidents: newResidents });
                       }}
                     />
                     <Input
                       label="Failed After 3 Months"
-                      type="number"
-                      value={resident.failedAfter3Months || ''}
+                      type="text"
+                      value={formatNumber(resident.failedAfter3Months)}
                       onChange={(e) => {
                         const newResidents = [...(formData.incubatorResidents || [])];
-                        newResidents[idx] = { ...newResidents[idx], failedAfter3Months: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newResidents[idx] = { ...newResidents[idx], failedAfter3Months: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorResidents: newResidents });
                       }}
                     />
                     <Input
                       label="Failed After 6 Months"
-                      type="number"
-                      value={resident.failedAfter6Months || ''}
+                      type="text"
+                      value={formatNumber(resident.failedAfter6Months)}
                       onChange={(e) => {
                         const newResidents = [...(formData.incubatorResidents || [])];
-                        newResidents[idx] = { ...newResidents[idx], failedAfter6Months: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newResidents[idx] = { ...newResidents[idx], failedAfter6Months: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorResidents: newResidents });
                       }}
                     />
                     <Input
                       label="Failed After 1 Year"
-                      type="number"
-                      value={resident.failedAfter1Year || ''}
+                      type="text"
+                      value={formatNumber(resident.failedAfter1Year)}
                       onChange={(e) => {
                         const newResidents = [...(formData.incubatorResidents || [])];
-                        newResidents[idx] = { ...newResidents[idx], failedAfter1Year: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newResidents[idx] = { ...newResidents[idx], failedAfter1Year: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorResidents: newResidents });
                       }}
                     />
                     <Input
                       label="Failed After 3 Years"
-                      type="number"
-                      value={resident.failedAfter3Years || ''}
+                      type="text"
+                      value={formatNumber(resident.failedAfter3Years)}
                       onChange={(e) => {
                         const newResidents = [...(formData.incubatorResidents || [])];
-                        newResidents[idx] = { ...newResidents[idx], failedAfter3Years: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newResidents[idx] = { ...newResidents[idx], failedAfter3Years: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorResidents: newResidents });
                       }}
                     />
                     <Input
                       label="Failed After 5 Years"
-                      type="number"
-                      value={resident.failedAfter5Years || ''}
+                      type="text"
+                      value={formatNumber(resident.failedAfter5Years)}
                       onChange={(e) => {
                         const newResidents = [...(formData.incubatorResidents || [])];
-                        newResidents[idx] = { ...newResidents[idx], failedAfter5Years: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newResidents[idx] = { ...newResidents[idx], failedAfter5Years: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorResidents: newResidents });
                       }}
                     />
@@ -1275,71 +1282,71 @@ export default function AdminNewIncubatorPage() {
                     />
                     <Input
                       label="Initial Capital"
-                      type="number"
-                      value={income.initialCapital || ''}
+                      type="text"
+                      value={formatNumber(income.initialCapital)}
                       onChange={(e) => {
                         const newIncome = [...(formData.incubatorIncome || [])];
-                        newIncome[idx] = { ...newIncome[idx], initialCapital: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newIncome[idx] = { ...newIncome[idx], initialCapital: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorIncome: newIncome });
                       }}
                     />
                     <Input
                       label="Paid Services Income"
-                      type="number"
-                      value={income.paidServicesIncome || ''}
+                      type="text"
+                      value={formatNumber(income.paidServicesIncome)}
                       onChange={(e) => {
                         const newIncome = [...(formData.incubatorIncome || [])];
-                        newIncome[idx] = { ...newIncome[idx], paidServicesIncome: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newIncome[idx] = { ...newIncome[idx], paidServicesIncome: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorIncome: newIncome });
                       }}
                     />
                     <Input
                       label="Paid Training Income"
-                      type="number"
-                      value={income.paidTrainingIncome || ''}
+                      type="text"
+                      value={formatNumber(income.paidTrainingIncome)}
                       onChange={(e) => {
                         const newIncome = [...(formData.incubatorIncome || [])];
-                        newIncome[idx] = { ...newIncome[idx], paidTrainingIncome: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newIncome[idx] = { ...newIncome[idx], paidTrainingIncome: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorIncome: newIncome });
                       }}
                     />
                     <Input
                       label="Paid Facilities Income"
-                      type="number"
-                      value={income.paidFacilitiesIncome || ''}
+                      type="text"
+                      value={formatNumber(income.paidFacilitiesIncome)}
                       onChange={(e) => {
                         const newIncome = [...(formData.incubatorIncome || [])];
-                        newIncome[idx] = { ...newIncome[idx], paidFacilitiesIncome: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newIncome[idx] = { ...newIncome[idx], paidFacilitiesIncome: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorIncome: newIncome });
                       }}
                     />
                     <Input
                       label="Donors"
-                      type="number"
-                      value={income.donors || ''}
+                      type="text"
+                      value={formatNumber(income.donors)}
                       onChange={(e) => {
                         const newIncome = [...(formData.incubatorIncome || [])];
-                        newIncome[idx] = { ...newIncome[idx], donors: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newIncome[idx] = { ...newIncome[idx], donors: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorIncome: newIncome });
                       }}
                     />
                     <Input
                       label="State"
-                      type="number"
-                      value={income.state || ''}
+                      type="text"
+                      value={formatNumber(income.state)}
                       onChange={(e) => {
                         const newIncome = [...(formData.incubatorIncome || [])];
-                        newIncome[idx] = { ...newIncome[idx], state: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newIncome[idx] = { ...newIncome[idx], state: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorIncome: newIncome });
                       }}
                     />
                     <Input
                       label="Loans"
-                      type="number"
-                      value={income.loans || ''}
+                      type="text"
+                      value={formatNumber(income.loans)}
                       onChange={(e) => {
                         const newIncome = [...(formData.incubatorIncome || [])];
-                        newIncome[idx] = { ...newIncome[idx], loans: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newIncome[idx] = { ...newIncome[idx], loans: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorIncome: newIncome });
                       }}
                     />
@@ -1389,51 +1396,51 @@ export default function AdminNewIncubatorPage() {
                     />
                     <Input
                       label="Seed"
-                      type="number"
-                      value={investment.seed || ''}
+                      type="text"
+                      value={formatNumber(investment.seed)}
                       onChange={(e) => {
                         const newInvestment = [...(formData.incubatorInvestment || [])];
-                        newInvestment[idx] = { ...newInvestment[idx], seed: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newInvestment[idx] = { ...newInvestment[idx], seed: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorInvestment: newInvestment });
                       }}
                     />
                     <Input
                       label="State"
-                      type="number"
-                      value={investment.state || ''}
+                      type="text"
+                      value={formatNumber(investment.state)}
                       onChange={(e) => {
                         const newInvestment = [...(formData.incubatorInvestment || [])];
-                        newInvestment[idx] = { ...newInvestment[idx], state: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newInvestment[idx] = { ...newInvestment[idx], state: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorInvestment: newInvestment });
                       }}
                     />
                     <Input
                       label="Privates"
-                      type="number"
-                      value={investment.privates || ''}
+                      type="text"
+                      value={formatNumber(investment.privates)}
                       onChange={(e) => {
                         const newInvestment = [...(formData.incubatorInvestment || [])];
-                        newInvestment[idx] = { ...newInvestment[idx], privates: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newInvestment[idx] = { ...newInvestment[idx], privates: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorInvestment: newInvestment });
                       }}
                     />
                     <Input
                       label="Current Year Investment"
-                      type="number"
-                      value={investment.currentYearInvestment || ''}
+                      type="text"
+                      value={formatNumber(investment.currentYearInvestment)}
                       onChange={(e) => {
                         const newInvestment = [...(formData.incubatorInvestment || [])];
-                        newInvestment[idx] = { ...newInvestment[idx], currentYearInvestment: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newInvestment[idx] = { ...newInvestment[idx], currentYearInvestment: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorInvestment: newInvestment });
                       }}
                     />
                     <Input
                       label="Cumulative Investment"
-                      type="number"
-                      value={investment.cumulativeInvestment || ''}
+                      type="text"
+                      value={formatNumber(investment.cumulativeInvestment)}
                       onChange={(e) => {
                         const newInvestment = [...(formData.incubatorInvestment || [])];
-                        newInvestment[idx] = { ...newInvestment[idx], cumulativeInvestment: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newInvestment[idx] = { ...newInvestment[idx], cumulativeInvestment: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorInvestment: newInvestment });
                       }}
                     />
@@ -1483,21 +1490,21 @@ export default function AdminNewIncubatorPage() {
                     />
                     <Input
                       label="Projects Count"
-                      type="number"
-                      value={project.projectsCount || ''}
+                      type="text"
+                      value={formatNumber(project.projectsCount)}
                       onChange={(e) => {
                         const newProjects = [...(formData.incubatorProjects || [])];
-                        newProjects[idx] = { ...newProjects[idx], projectsCount: e.target.value ? parseInt(e.target.value) : undefined };
+                        newProjects[idx] = { ...newProjects[idx], projectsCount: parseInteger(e.target.value) };
                         setFormData({ ...formData, incubatorProjects: newProjects });
                       }}
                     />
                     <Input
                       label="Fund"
-                      type="number"
-                      value={project.fund || ''}
+                      type="text"
+                      value={formatNumber(project.fund)}
                       onChange={(e) => {
                         const newProjects = [...(formData.incubatorProjects || [])];
-                        newProjects[idx] = { ...newProjects[idx], fund: e.target.value ? parseFloat(e.target.value) : undefined };
+                        newProjects[idx] = { ...newProjects[idx], fund: parseNumber(e.target.value) };
                         setFormData({ ...formData, incubatorProjects: newProjects });
                       }}
                     />

@@ -24,12 +24,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const response = await authApi.getCurrentUser();
         if (response.status === 'SUCCESS' && response.username && response.role) {
           // Normalize role format (ROLE_ADMIN -> ADMIN, ROLE_MANAGER -> MANAGER, ROLE_USER -> USER)
-          let normalizedRole = response.role;
+          let normalizedRole: string = response.role;
           if (normalizedRole.startsWith('ROLE_')) {
             normalizedRole = normalizedRole.replace('ROLE_', '');
           }
           
-          const userData = { username: response.username, role: normalizedRole };
+          const userData = { username: response.username, role: normalizedRole as UserRole };
           setUser(userData);
           sessionStorage.setItem('user', JSON.stringify(userData));
         } else {
@@ -68,18 +68,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await authApi.login({ username, password });
       if (response.status === 'SUCCESS') {
         // Normalize role format (ROLE_ADMIN -> ADMIN, ROLE_MANAGER -> MANAGER, ROLE_USER -> USER)
-        let normalizedRole = response.role;
+        let normalizedRole: string = response.role;
         if (normalizedRole.startsWith('ROLE_')) {
           normalizedRole = normalizedRole.replace('ROLE_', '');
         }
         
-        const userData = { username: response.username, role: normalizedRole };
+        const userData = { username: response.username, role: normalizedRole as UserRole };
         setUser(userData);
         sessionStorage.setItem('user', JSON.stringify(userData));
       } else {
         throw new Error('Login failed: Invalid response from server');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Re-throw with more context
       throw error;
     }
