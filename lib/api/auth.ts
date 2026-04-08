@@ -13,4 +13,8 @@ export const authApi = {
   getCurrentUser: async (): Promise<LoginResponse> => {
     return apiClient.get<LoginResponse>('/auth/current');
   },
+
+  changePassword: async (currentPassword: string, newPassword: string): Promise<void> => {
+    await apiClient.post('/auth/password', { currentPassword, newPassword });
+  },
 };
