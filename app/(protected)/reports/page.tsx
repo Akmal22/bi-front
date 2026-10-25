@@ -80,12 +80,21 @@ export default function ReportsPage() {
   const [fullReport, setFullReport] = useState<FullReportResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [reportType, setReportType] = useState<'short' | 'full'>('short');
+  const [periodStart, setPeriodStart] = useState<string>('');
+  const [periodEnd, setPeriodEnd] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
 
   useEffect(() => {
     loadIncubators();
   }, []);
+
+  useEffect(() => {
+    if ((user?.role === 'USER' || user?.role === 'INVESTOR') && reportType === 'full') {
+      setReportType('short');
+      setFullReport(null);
+    }
+  }, [user]);
 
   const loadIncubators = async () => {
     try {
@@ -107,7 +116,12 @@ export default function ReportsPage() {
     setIsLoading(true);
     try {
       if (reportType === 'short') {
-        const response = await reportsApi.getShortReport(selectedIncubator);
+        const selectedInc = incubators.find(inc => inc.incubatorUuid === selectedIncubator);
+        const defaultStart = selectedInc ? new Date(selectedInc.founded).getFullYear() : new Date().getFullYear();
+        const defaultEnd = new Date().getFullYear();
+        const startYear = periodStart ? parseInt(periodStart, 10) : defaultStart;
+        const endYear = periodEnd ? parseInt(periodEnd, 10) : defaultEnd;
+        const response = await reportsApi.getShortReport(selectedIncubator, startYear, endYear);
         setShortReport(response);
         setFullReport(null);
       } else {
@@ -153,20 +167,22 @@ export default function ReportsPage() {
 
       <Card title="Report Configuration">
         <div className="space-y-4">
-          <Select
-            label="Report Type"
-            value={reportType}
-            onChange={(e) => {
-              setReportType(e.target.value as 'short' | 'full');
-              setShortReport(null);
-              setFullReport(null);
-              setErrorMessage('');
-            }}
-            options={[
-              { value: 'short', label: 'Short Report' },
-              { value: 'full', label: 'Full Report' },
-            ]}
-          />
+          {user?.role !== 'USER' && user?.role !== 'INVESTOR' && (
+            <Select
+              label="Report Type"
+              value={reportType}
+              onChange={(e) => {
+                setReportType(e.target.value as 'short' | 'full');
+                setShortReport(null);
+                setFullReport(null);
+                setErrorMessage('');
+              }}
+              options={[
+                { value: 'short', label: 'Short Report' },
+                { value: 'full', label: 'Full Report' },
+              ]}
+            />
+          )}
 
           <Select
             label="Select Incubator"
@@ -185,6 +201,64 @@ export default function ReportsPage() {
               })),
             ]}
           />
+
+          {reportType === 'short' && (() => {
+            const selectedInc = incubators.find(i => i.incubatorUuid === selectedIncubator);
+            const foundedYear = selectedInc ? new Date(selectedInc.founded).getFullYear() : undefined;
+            const currentYear = new Date().getFullYear();
+            const selectedEnd = periodEnd ? parseInt(periodEnd, 10) : currentYear;
+            const selectedStart = periodStart ? parseInt(periodStart, 10) : (foundedYear ?? currentYear - 1);
+            // start options: founded .. selectedEnd-1
+            const startOptions = foundedYear !== undefined
+              ? Array.from({ length: selectedEnd - foundedYear }, (_, i) => {
+                  const y = foundedYear + i;
+                  return { value: String(y), label: String(y) };
+                })
+              : [];
+            // end options: selectedStart+1 .. currentYear
+            const endOptions = foundedYear !== undefined
+              ? Array.from({ length: currentYear - selectedStart }, (_, i) => {
+                  const y = selectedStart + 1 + i;
+                  return { value: String(y), label: String(y) };
+                })
+              : [];
+            return (
+              <div className="grid grid-cols-2 gap-4">
+                <Select
+                  label="Period Start (year)"
+                  value={periodStart}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setPeriodStart(val);
+                    if (val && periodEnd && parseInt(val, 10) >= parseInt(periodEnd, 10)) {
+                      setPeriodEnd(String(parseInt(val, 10) + 1));
+                    }
+                  }}
+                  options={[
+                    { value: '', label: foundedYear !== undefined ? `Default (${foundedYear})` : '-- Select incubator first --' },
+                    ...startOptions,
+                  ]}
+                  disabled={!selectedIncubator}
+                />
+                <Select
+                  label="Period End (year)"
+                  value={periodEnd}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setPeriodEnd(val);
+                    if (val && periodStart && parseInt(val, 10) <= parseInt(periodStart, 10)) {
+                      setPeriodStart(String(parseInt(val, 10) - 1));
+                    }
+                  }}
+                  options={[
+                    { value: '', label: `Default (${currentYear})` },
+                    ...endOptions,
+                  ]}
+                  disabled={!selectedIncubator}
+                />
+              </div>
+            );
+          })()}
 
           <Button onClick={handleGenerateReport} disabled={isLoading || !selectedIncubator}>
             {isLoading ? 'Generating...' : 'Generate Report'}

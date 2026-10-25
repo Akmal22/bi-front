@@ -2,8 +2,8 @@ import { apiClient } from './client';
 import type { ShortReportResponse, FullReportResponse } from '../types';
 
 export const reportsApi = {
-  getShortReport: async (incubatorUuid: string): Promise<ShortReportResponse> => {
-    return apiClient.get<ShortReportResponse>(`/report/short/${incubatorUuid}`);
+  getShortReport: async (incubatorUuid: string, startYear: number, endYear: number): Promise<ShortReportResponse> => {
+    return apiClient.get<ShortReportResponse>(`/report/short/${incubatorUuid}?start=${startYear}&end=${endYear}`);
   },
 
   getFullReport: async (incubatorUuid: string): Promise<FullReportResponse> => {

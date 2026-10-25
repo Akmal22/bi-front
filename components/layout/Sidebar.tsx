@@ -20,7 +20,7 @@ const navItems: NavItem[] = [
   { label: 'Users', href: '/admin/users', icon: '👥', roles: ['ADMIN'] },
   { label: 'Countries', href: '/admin/countries', icon: '🌍', roles: ['ADMIN'] },
   { label: 'Incubators', href: '/admin/incubators', icon: '🏢', roles: ['ADMIN', 'MANAGER'] },
-  { label: 'Reports', href: '/reports', icon: '📈', roles: ['ADMIN', 'MANAGER', 'USER'] },
+  { label: 'Reports', href: '/reports', icon: '📈', roles: ['ADMIN', 'MANAGER', 'USER', 'INVESTOR'] },
 ];
 
 export function Sidebar() {

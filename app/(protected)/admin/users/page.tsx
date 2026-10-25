@@ -64,7 +64,7 @@ export default function UsersPage() {
     setEditingUser(user);
     setFormData({
       username: user.username,
-      password: user.password || '',
+      password: '',
       email: user.email,
       role: user.role,
       fullName: user.fullName || '',
@@ -225,6 +225,7 @@ export default function UsersPage() {
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             required={!editingUser}
+            autoComplete="new-password"
           />
           <Input
             label="Full Name"
@@ -239,6 +240,7 @@ export default function UsersPage() {
               { value: 'ADMIN', label: 'Admin' },
               { value: 'MANAGER', label: 'Manager' },
               { value: 'USER', label: 'User' },
+              { value: 'INVESTOR', label: 'Investor' },
             ]}
             required
           />
